@@ -65,6 +65,7 @@ typedef int (*USRCMDFUNC)(int argc, char **argv);
 static int usrcmd_ntopt_callback(int argc, char **argv, void *extobj);
 static int usrcmd_help(int argc, char **argv);
 static int usrcmd_info(int argc, char **argv);
+static int usrcmd_oled(int argc, char **argv);
 
 #ifdef __AVR__
 const char cmd_0[] PROGMEM = 	"help";
@@ -88,6 +89,8 @@ const char cmd_0[] = 	"help";
 const char desc_0[] = 	"show help";
 const char cmd_1[] = 	"info";
 const char desc_1[] = 	"show info";
+const char cmd_2[] = 	"oled";
+const char desc_2[] = 	"display on oled";
 
 typedef struct {
 	const char *cmd;
@@ -99,6 +102,7 @@ typedef struct {
 static const cmd_table_t cmdlist[] = {
 		{ cmd_0, desc_0, usrcmd_help },
 		{ cmd_1, desc_1, usrcmd_info },
+		{ cmd_2, desc_2, usrcmd_oled },
 };
 #endif // #ifdef __AVR__
 
@@ -185,5 +189,27 @@ static int usrcmd_info(int argc, char **argv)
 	return -1;
 }
 
+#include <Wire.h>  // Only needed for Arduino 1.6.5 and earlier
+#include "SSD1306.h" // alias for `#include "SSD1306Wire.h"`
+extern SSD1306 display;
+int usrcmd_oled(int argc, char **argv)
+{
+	if (argc != 2)
+	{
+		uart_puts(F("oled <string>\r\n"));
+		return 0;
+	}
+
+
+
+	display.setColor(BLACK);
+	display.fillRect(0, 0, 128, 20); // clear the area.
+
+	display.setColor(WHITE);
+	display.drawString(5,5, String(argv[1]));
+	display.display();
+
+	return 0;
+}
 
 #endif
