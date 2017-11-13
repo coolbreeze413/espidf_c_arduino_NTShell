@@ -1,6 +1,9 @@
 #ifndef _NTSHELL_ARDUINO_H
 #define _NTSHELL_ARDUINO_H
 
-void ntshell_execute_arduino(ntshell_t *p);
+#define SKELETOR_NTSHELL_PROMPT 		"skeletor>"
+
+void poll_shell();
+void initialize_shell();
 
 #endif
