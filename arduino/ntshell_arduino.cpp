@@ -81,6 +81,7 @@ void poll_shell()
 		unsigned char ch;
 		SERIAL_READ(&ntshell, (char *)&ch, sizeof(ch));
 		vtrecv_execute(&(ntshell.vtrecv), &ch, sizeof(ch));
+
 	}
 }
 
