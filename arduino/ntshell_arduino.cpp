@@ -4,7 +4,10 @@
 
 #include "Arduino.h"
 #include "ntshell_arduino.h"
-#include "usrcmd_arduino.h"
+
+
+USER_CALLBACK user_cb = NULL;
+HardwareSerial* serialPtr = NULL;
 
 // NOTE:
 // int usrcmd_execute(const char *text)
@@ -18,9 +21,9 @@ static ntshell_t ntshell;
 
 static int func_read(char *buf, int cnt, void *extobj)
 {
-	if (Serial.available())
+	if (serialPtr->available())
 	{
-		return Serial.readBytes(buf, cnt);
+		return serialPtr->readBytes(buf, cnt);
 	}
 	else
 	{
@@ -31,7 +34,7 @@ static int func_read(char *buf, int cnt, void *extobj)
 
 static int func_write(const char *buf, int cnt, void *extobj)
 {
-	return Serial.write((const uint8_t*)buf, cnt);
+	return serialPtr->write((const uint8_t*)buf, cnt);
 }
 
 
@@ -48,14 +51,20 @@ static int func_callback(const char *text, void *extobj)
 	}
 	return 0;
 #else
-	return usrcmd_execute(text);
+	return user_cb(text);
 #endif
 }
 
 
-
-void initialize_shell()
+void initialize_shell(USER_CALLBACK cb, const char* prompt, HardwareSerial* serial)
 {
+    // set the user callback function
+    user_cb = cb;
+
+    // set the serial port instance (HWSerial only) TODO: make this stream oriented !
+    serialPtr = serial;
+
+    // init shell with read/write/cb functions
 	ntshell_init(
 			&ntshell,
 			func_read,
@@ -63,16 +72,23 @@ void initialize_shell()
 			func_callback,
 			(void *)(&ntshell));
 
-	ntshell_set_prompt(&ntshell, SKELETOR_NTSHELL_PROMPT);
-	Serial.println(F("welcome to s.k.e.l.e.t.o.r \r\n type 'help' for help."));
-	Serial.print(SKELETOR_NTSHELL_PROMPT);
-	Serial.flush();
+    // set prompt if passed in
+    if(prompt != NULL)
+    {
+	    ntshell_set_prompt(&ntshell, prompt);
+    }
+}
+
+
+void set_prompt(const char* prompt)
+{
+    ntshell_set_prompt(&ntshell, prompt);
 }
 
 
 void poll_shell()
 {
-	while(Serial.available())
+	while(serialPtr->available())
 	{
 		if (ntshell.initcode != INITCODE) {
 			return;
@@ -81,7 +97,6 @@ void poll_shell()
 		unsigned char ch;
 		SERIAL_READ(&ntshell, (char *)&ch, sizeof(ch));
 		vtrecv_execute(&(ntshell.vtrecv), &ch, sizeof(ch));
-
 	}
 }
 

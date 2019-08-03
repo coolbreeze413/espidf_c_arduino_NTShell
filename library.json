@@ -1,0 +1,34 @@
+{
+    "name": "NTShell",
+    "keywords": "vt100, shell, serial",
+    "description": "vt100 compatible shell with history based on cubeat systems NTShell",
+    "authors":
+    {
+        "name": "coolbreeze413",
+        "url": ""
+    },
+    "version": "1.0",
+    "downloadUrl": "",
+    "export": {
+        "include": [
+            "arduino/*",
+            "arduino/include/*",
+            "common/*",
+            "common/include/*"
+        ]
+    },
+    "build": {
+        "srcFilter": [
+            "+<arduino/*.cpp>",
+            "+<arduino/include/*.h>",
+            "+<common/*.c>",
+            "+<common/include/*.h>"
+        ],
+            "flags": [
+            "-I arduino/include",
+            "-I common/include"
+        ]
+    },
+    "frameworks": "arduino",
+    "platforms": "espressif32"
+}
